@@ -8,6 +8,8 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -34,36 +36,65 @@ import java.util.HashMap;
  * 添加内容界面
  */
 public class RSSListView extends Fragment {
-    View view = null;
-    private RecyclerView recyclerView = null;
-    private RSSFeed rssFeed =null;
+    private View view = null;
     private String url = null;
+    private RecyclerView recyclerView = null;
+    private SwipeRefreshLayout refreshLayout = null;
     private ListAdapter listAdapter = null;
     private Handler handler = null;
     private ProgressBar progressBar = null;
-    private Fragment self;
+    private RSSParser currentRSS = null;
+
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.content_rss_list, container, false);
+        initView();
+        initHandler();
+        openRSS("https://www.zhihu.com/rss");
+
+        return view;
+    }
+
+    private void initView(){
         progressBar = (ProgressBar) view.findViewById(R.id.rss_loading_bar);
         progressBar.setVisibility(View.VISIBLE);
+
         recyclerView = (RecyclerView) view.findViewById(R.id.rss_list);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-        self = this;
+
+        refreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.rss_list_pull_down);
+        refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                new RSSParser(url,handler).start();
+                Log.e("LOGCAT","啦啦1");
+            }
+        });
+        refreshLayout.setColorSchemeResources(
+                R.color.colorPrimary
+        );
+    }
+
+    private void initHandler(){
         handler = new Handler() {
             public void handleMessage(Message msg) {
                 super.handleMessage(msg);
                 switch (msg.what) {
                     case Messages.RSS_PARSE_SUCCESS:
+                        releaseRSSParser();
+                        progressBar.setVisibility(View.GONE);
+                        refreshLayout.setRefreshing(false);
+                        Log.e("LOGCAT","啦啦2");
                         final Bundle bundle = msg.getData();
                         ArrayList<RSSItem> list = bundle.getParcelableArrayList("list");
                         if (null == list) {
-                            Snackbar.make(view, "URL is illegal.", Snackbar.LENGTH_LONG)
+                            Snackbar.make(view, "Can not get data.", Snackbar.LENGTH_LONG)
                                     .setAction("Action", null).show();
                         } else {
-                            progressBar.setVisibility(View.GONE);
-                            Log.e("LOGCAT", "dajskdjaksljdlkasjdlkasjdlksajfkdjshfsadjhgkjhgsdj gkjd");
+                            if (null !=bundle.getString("title")){
+                                ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle(bundle.getString("title"));
+                            }
                             listAdapter = new ListAdapter(list);
                             listAdapter.setListener(new ItemOnClickListener() {
                                 @Override
@@ -77,23 +108,29 @@ public class RSSListView extends Fragment {
                         }
                         break;
                     case Messages.URL_ILLEAGEL:
+                        releaseRSSParser();
+                        progressBar.setVisibility(View.GONE);
+                        refreshLayout.setRefreshing(false);
+                        Log.e("LOGCAT","啦啦2");
                         Snackbar.make(view, "URL is illegal.", Snackbar.LENGTH_LONG)
                                 .setAction("Action", null).show();
                         break;
                 }
             }
         };
-        new RSSParser("https://www.zhihu.com/rss",handler).start();
-        return view;
     }
 
-/*    public void switchContent(Fragment to) {
-            FragmentTransaction transaction = getFragmentManager().beginTransaction().setCustomAnimations(
-                    android.R.anim.fade_in,android.R.anim.slide_out_right);
-            if (!to.isAdded())    // 先判断是否被add过
-                transaction.hide(this).add(R.id.fragment_content, to).commit();
-            else
-                transaction.hide(this).show(to).commit();
-            getFragmentManager().executePendingTransactions();
-    }*/
+    public void releaseRSSParser(){
+        currentRSS = null;
+    }
+
+    public void openRSS(String url){
+        this.url=url;
+        if(null != currentRSS){
+            currentRSS.stopPulling();
+        }
+        refreshLayout.setRefreshing(true);
+        currentRSS = new RSSParser(url,handler);
+        currentRSS.start();
+    }
 }

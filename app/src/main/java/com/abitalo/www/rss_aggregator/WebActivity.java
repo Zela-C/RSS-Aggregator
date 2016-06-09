@@ -26,13 +26,12 @@ public class WebActivity extends AppCompatActivity {
     private Date pubDate= null;
     private Date currentDate = null;
     private final DateFormat formatter = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.ENGLISH);
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.content_rss_detail);
         init_view();
-
-
     }
 
     private void init_view(){
@@ -45,7 +44,8 @@ public class WebActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
-        getSupportActionBar().setTitle("Easy");
+        getSupportActionBar().setTitle("");
+
         Intent intent = getIntent();
         HashMap item = (HashMap) intent.getSerializableExtra("item");
 
@@ -80,10 +80,12 @@ public class WebActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem menuItem) {
         if (menuItem.getItemId() == android.R.id.home) {
-            finish();
+//            finish();
+            webView.goBack();
         }
         return super.onOptionsItemSelected(menuItem);
     }
+
     private void showWebView(String html)
     {
         String CSS_STYLE ="<style>* {color:#808080;max-width: 100% !important;word-wrap:break-word !important;} " +
@@ -101,7 +103,7 @@ public class WebActivity extends AppCompatActivity {
         webView.requestFocus(); //触摸焦点起作用.如果不设置，则在点击网页文本输入框时，不能弹出软键盘及不响应其他的一些事件。
 
         //                点击链接由自己处理，而不是新开Android的系统browser响应该链接。
-        webView.setWebViewClient(new WebViewClient()
+/*        webView.setWebViewClient(new WebViewClient()
         {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url)
@@ -110,7 +112,7 @@ public class WebActivity extends AppCompatActivity {
                 view.loadUrl(url);
                 return true;
             }
-        });
+        });*/
     }
 
 }

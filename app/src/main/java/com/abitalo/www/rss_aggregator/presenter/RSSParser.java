@@ -27,8 +27,9 @@ import info.monitorenter.cpdetector.io.JChardetFacade;
  * Created by Zela on 2016/5/5.
  */
 public class RSSParser extends Thread{
-    String urlStr =null;
-    Handler handler = null;
+    private boolean isRuning = true;
+    private String urlStr =null;
+    private Handler handler = null;
 
     public RSSParser(String urlStr, Handler handler){
         this.urlStr=urlStr;
@@ -69,17 +70,24 @@ public class RSSParser extends Thread{
                 xmlReader.parse(inputSource);
             }
             Bundle  bundle =new Bundle();
+            bundle.putString("title",rssHandler.getRSSFeed().getTitle());
             bundle.putParcelableArrayList("list",rssHandler.getRSSFeed().getList());
+            if(false == isRuning){
+                return;
+            }
             Message msg = new Message();
             msg.what= Messages.RSS_PARSE_SUCCESS;
             msg.setData(bundle);
             handler.sendMessage(msg);
-            Log.e("LOGCAT", "5555555555555555555555555555555555555555555555555555555556sad5asdasdsada");
         } catch (Exception e) {
             e.printStackTrace();
             Message msg = new Message();
             msg.what= Messages.URL_ILLEAGEL;
             handler.sendMessage(msg);
         }
+    }
+
+    public void stopPulling(){
+        isRuning=false;
     }
 }
