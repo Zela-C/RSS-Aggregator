@@ -16,13 +16,19 @@ public class RSSItem implements Parcelable{
     private String description = null;
     private String encoded = null;
     private String author = null;
+    private String mabstract = null;
+    private String imageUrl = null;
 
     protected RSSItem(Parcel in) {
         title = in.readString();
         pubdate = in.readString();
-        in.readStringList(categories);
+        categories = in.createStringArrayList();
         link = in.readString();
         description = in.readString();
+        encoded = in.readString();
+        author = in.readString();
+        mabstract = in.readString();
+        imageUrl = in.readString();
     }
 
     public static final Creator<RSSItem> CREATOR = new Creator<RSSItem>() {
@@ -37,14 +43,27 @@ public class RSSItem implements Parcelable{
         }
     };
 
+    public String getMabstract() {
+        return mabstract;
+    }
+
+    public void setMabstract(String mabstract) {
+        this.mabstract = mabstract;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
     public RSSItem() {
         categories = new ArrayList<String>();
     }
 
     public String getTitle() {
-//        if (title.length() > 20) {
-//            return title.substring(0, 19) + "...";
-//        }
         return title;
     }
 
@@ -116,10 +135,16 @@ public class RSSItem implements Parcelable{
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
+
         dest.writeString(title);
         dest.writeString(pubdate);
         dest.writeStringList(categories);
         dest.writeString(link);
         dest.writeString(description);
+        dest.writeString(encoded);
+        dest.writeString(author);
+        dest.writeString(mabstract);
+        dest.writeString(imageUrl);
     }
+
 }

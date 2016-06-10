@@ -85,7 +85,7 @@ public class RSSListView extends Fragment {
                         releaseRSSParser();
                         progressBar.setVisibility(View.GONE);
                         refreshLayout.setRefreshing(false);
-                        Log.e("LOGCAT","啦啦2");
+                        Log.e("LOGCAT","获取RSS完毕");
                         final Bundle bundle = msg.getData();
                         ArrayList<RSSItem> list = bundle.getParcelableArrayList("list");
                         if (null == list) {
@@ -111,7 +111,7 @@ public class RSSListView extends Fragment {
                         releaseRSSParser();
                         progressBar.setVisibility(View.GONE);
                         refreshLayout.setRefreshing(false);
-                        Log.e("LOGCAT","啦啦2");
+                        Log.e("LOGCAT","获取RSS失败");
                         Snackbar.make(view, "URL is illegal.", Snackbar.LENGTH_LONG)
                                 .setAction("Action", null).show();
                         break;

@@ -67,8 +67,12 @@ public class WelcomeNav extends Fragment implements View.OnClickListener {
     }
 
     private void gotoLoginPage() {
-        FragmentManager fragmentManager = getFragmentManager();
-        fragmentManager.beginTransaction().replace(R.id.fragment_content, new SignInView(), "sign_in").commit();
+        FragmentManager fragmentManager =getActivity().getSupportFragmentManager();
+        fragmentManager.beginTransaction().replace(R.id.fragment_content, new RSSListView(), "fragment_view").commit();
+        fragmentManager.executePendingTransactions();
+        RSSListView rssListView = (RSSListView)fragmentManager.findFragmentByTag("fragment_view");
+        if(rssListView == null) Log.e("LogCat","空白空空！");
+        rssListView.openRSS("https://www.zhihu.com/rss");
         drawer.closeDrawer(getActivity().findViewById(R.id.nav_account));
     }
 }

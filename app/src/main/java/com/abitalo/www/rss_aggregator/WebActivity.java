@@ -80,8 +80,7 @@ public class WebActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem menuItem) {
         if (menuItem.getItemId() == android.R.id.home) {
-//            finish();
-            webView.goBack();
+            finish();
         }
         return super.onOptionsItemSelected(menuItem);
     }
@@ -101,18 +100,6 @@ public class WebActivity extends AppCompatActivity {
                 null);
         webView.getSettings().setLayoutAlgorithm(WebSettings.LayoutAlgorithm.TEXT_AUTOSIZING);
         webView.requestFocus(); //触摸焦点起作用.如果不设置，则在点击网页文本输入框时，不能弹出软键盘及不响应其他的一些事件。
-
-        //                点击链接由自己处理，而不是新开Android的系统browser响应该链接。
-/*        webView.setWebViewClient(new WebViewClient()
-        {
-            @Override
-            public boolean shouldOverrideUrlLoading(WebView view, String url)
-            {
-                //设置点击网页里面的链接还是在当前的webview里跳转
-                view.loadUrl(url);
-                return true;
-            }
-        });*/
     }
 
 }

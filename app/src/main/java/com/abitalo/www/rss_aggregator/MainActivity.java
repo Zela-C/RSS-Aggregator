@@ -56,7 +56,8 @@ public class MainActivity extends AppCompatActivity {
 
         fragmentManager.beginTransaction().add(R.id.nav_account, new WelcomeNav(), "account_nav").commit();
         fragmentManager.beginTransaction().add(R.id.discovery_nav_view, new NavDiscoveryView(), "discovery_view").commit();
-        fragmentManager.beginTransaction().add(R.id.fragment_content, new RSSListView(), "fragment_view").commit();
+
+//        fragmentManager.beginTransaction().add(R.id.fragment_content, new RSSListView(), "fragment_view").commit();
     }
 
     @Override

@@ -8,4 +8,5 @@
     <color name="darkGray">#818181</color>
     <color name="lightDark">#ccc</color>
     <color name="black">#000</color>
+    <color name="rssBackgroud">#eaeef4</color>
 </resources>

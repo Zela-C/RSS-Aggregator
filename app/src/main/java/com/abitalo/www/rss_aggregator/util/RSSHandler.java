@@ -122,8 +122,15 @@ public class RSSHandler extends DefaultHandler {
             return;
         }
         else if ("description".equals(localName)) {
-            if(isInItem)
+            if(isInItem) {
                 rssItem.setDescription(string);
+                if(null==rssItem.getImageUrl()){
+                    rssItem.setImageUrl(RSSContentFilter.getImgSrc(string));
+                }
+                if(null == rssItem.getMabstract()){
+                    rssItem.setMabstract(RSSContentFilter.getAbstract(string));
+                }
+            }
             currentFlag = 0;
             return;
         }
@@ -150,8 +157,15 @@ public class RSSHandler extends DefaultHandler {
             return;
         }
         else if("encoded".equals(localName)){
-            if(isInItem)
+            if(isInItem) {
                 rssItem.setEncoded(string);
+                if(null==rssItem.getImageUrl()){
+                    rssItem.setImageUrl(RSSContentFilter.getImgSrc(string));
+                }
+                if(null == rssItem.getMabstract()){
+                    rssItem.setMabstract(RSSContentFilter.getAbstract(string));
+                }
+            }
             currentFlag= 0 ;
             return;
         }

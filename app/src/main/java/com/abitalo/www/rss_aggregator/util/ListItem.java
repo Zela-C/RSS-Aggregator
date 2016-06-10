@@ -8,6 +8,8 @@ import com.abitalo.www.rss_aggregator.R;
 import com.abitalo.www.rss_aggregator.listener.ItemOnClickListener;
 import com.facebook.drawee.view.SimpleDraweeView;
 
+import org.w3c.dom.Text;
+
 import java.util.HashMap;
 
 /**
@@ -16,11 +18,14 @@ import java.util.HashMap;
 public class ListItem extends RecyclerView.ViewHolder implements View.OnClickListener  {
     TextView title = null;
     TextView date = null;
+    TextView mAbstract = null;
+    TextView author = null;
+    TextView dot = null;
     SimpleDraweeView image = null;
     String url = null;
     String descriptionstr = null;
     String encoded = null;
-    String author = null;
+    String authorstr = null;
     String imgStr = null;
     ItemOnClickListener mListener;
 
@@ -29,6 +34,9 @@ public class ListItem extends RecyclerView.ViewHolder implements View.OnClickLis
 //        square=(TextView)itemView.findViewById(R.id.square);
         title = (TextView) itemView.findViewById(R.id.item_title);
         date = (TextView) itemView.findViewById(R.id.item_date);
+        author = (TextView) itemView.findViewById(R.id.item_author);
+        dot = (TextView) itemView.findViewById(R.id.rss_dot);
+        mAbstract = (TextView) itemView.findViewById(R.id.item_abstract);
         image = (SimpleDraweeView) itemView.findViewById(R.id.item_pic);
         mListener = listener;
         itemView.findViewById(R.id.item_card).setOnClickListener(this);
@@ -42,7 +50,7 @@ public class ListItem extends RecyclerView.ViewHolder implements View.OnClickLis
         item.put("description",descriptionstr);
         item.put("encoded",encoded);
         item.put("url",url);
-        item.put("author",author);
+        item.put("author",authorstr);
         if(null != mListener){
             mListener.onItemClick(v,item);
         }
