@@ -4,7 +4,6 @@ package com.abitalo.www.rss_aggregator.presenter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 
 import com.abitalo.www.rss_aggregator.constants.Messages;
 import com.abitalo.www.rss_aggregator.util.RSSHandler;

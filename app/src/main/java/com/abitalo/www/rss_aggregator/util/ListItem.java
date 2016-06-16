@@ -8,8 +8,6 @@ import com.abitalo.www.rss_aggregator.R;
 import com.abitalo.www.rss_aggregator.listener.ItemOnClickListener;
 import com.facebook.drawee.view.SimpleDraweeView;
 
-import org.w3c.dom.Text;
-
 import java.util.HashMap;
 
 /**

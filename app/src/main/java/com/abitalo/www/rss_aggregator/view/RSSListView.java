@@ -7,7 +7,6 @@ import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -23,7 +22,6 @@ import com.abitalo.www.rss_aggregator.R;
 import com.abitalo.www.rss_aggregator.WebActivity;
 import com.abitalo.www.rss_aggregator.constants.Messages;
 import com.abitalo.www.rss_aggregator.listener.ItemOnClickListener;
-import com.abitalo.www.rss_aggregator.model.RSSFeed;
 import com.abitalo.www.rss_aggregator.model.RSSItem;
 import com.abitalo.www.rss_aggregator.presenter.RSSParser;
 import com.abitalo.www.rss_aggregator.util.ListAdapter;
@@ -36,6 +34,7 @@ import java.util.HashMap;
  * 添加内容界面
  */
 public class RSSListView extends Fragment {
+    private static final String RSSURL = "url";
     private View view = null;
     private String url = null;
     private RecyclerView recyclerView = null;
@@ -45,13 +44,21 @@ public class RSSListView extends Fragment {
     private ProgressBar progressBar = null;
     private RSSParser currentRSS = null;
 
+    public static Fragment newInstance(String arg){
+        RSSListView fragment = new RSSListView();
+        Bundle bundle = new Bundle();
+        bundle.putString(RSSURL,arg);
+        fragment.setArguments(bundle);
+
+        return fragment;
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.content_rss_list, container, false);
         initView();
         initHandler();
-        openRSS("https://www.zhihu.com/rss");
-
+        openRSS();
         return view;
     }
 
@@ -84,7 +91,9 @@ public class RSSListView extends Fragment {
                     case Messages.RSS_PARSE_SUCCESS:
                         releaseRSSParser();
                         progressBar.setVisibility(View.GONE);
-                        refreshLayout.setRefreshing(false);
+                        if(null !=refreshLayout){
+                            refreshLayout.setRefreshing(false);
+                        }
                         Log.e("LOGCAT","获取RSS完毕");
                         final Bundle bundle = msg.getData();
                         ArrayList<RSSItem> list = bundle.getParcelableArrayList("list");
@@ -93,7 +102,11 @@ public class RSSListView extends Fragment {
                                     .setAction("Action", null).show();
                         } else {
                             if (null !=bundle.getString("title")){
-                                ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle(bundle.getString("title"));
+                                try {
+                                    ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle(bundle.getString("title"));
+                                }catch (Exception exception){
+                                    Log.e("RssListView", "Some thing wrong");
+                                }
                             }
                             listAdapter = new ListAdapter(list);
                             listAdapter.setListener(new ItemOnClickListener() {
@@ -110,7 +123,9 @@ public class RSSListView extends Fragment {
                     case Messages.URL_ILLEAGEL:
                         releaseRSSParser();
                         progressBar.setVisibility(View.GONE);
-                        refreshLayout.setRefreshing(false);
+                        if(null !=refreshLayout){
+                            refreshLayout.setRefreshing(false);
+                        }
                         Log.e("LOGCAT","获取RSS失败");
                         Snackbar.make(view, "URL is illegal.", Snackbar.LENGTH_LONG)
                                 .setAction("Action", null).show();
@@ -121,15 +136,18 @@ public class RSSListView extends Fragment {
     }
 
     public void releaseRSSParser(){
+//        currentRSS.stopPulling();
         currentRSS = null;
     }
 
-    public void openRSS(String url){
-        this.url=url;
+    private void openRSS(){
+        url = getArguments().getString(RSSURL);
         if(null != currentRSS){
             currentRSS.stopPulling();
         }
-        refreshLayout.setRefreshing(true);
+        if(null != refreshLayout) {
+            refreshLayout.setRefreshing(true);
+        }
         currentRSS = new RSSParser(url,handler);
         currentRSS.start();
     }

@@ -1,20 +1,23 @@
 package com.abitalo.www.rss_aggregator.view;
 
-import android.net.http.LoggingEventHandler;
+import android.media.Image;
 import android.os.Bundle;
 import android.os.Message;
 import android.support.annotation.Nullable;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
+import android.view.inputmethod.EditorInfo;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.abitalo.www.rss_aggregator.R;
@@ -27,113 +30,93 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Handler;
 
 import cn.bmob.v3.BmobQuery;
 import cn.bmob.v3.listener.FindCallback;
 
 /**
  * Created by sangzhenya on 2016/5/10.
- * 添加内容界面
+ * APP右侧展示源信息的界面
  */
 public class NavDiscoveryView extends Fragment {
-    View view = null;
+    private View view = null;
+    private EditText etSearchInput;
 
-    android.os.Handler handler = new android.os.Handler(){
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case 1:
-                    Bundle bundle = msg.getData();
-                    initView(bundle.getString("msg"));
-                    break;
-            }
-            super.handleMessage(msg);
-        }
-    };
+    private FragmentManager fragmentManager;
+    private DrawerLayout drawer;
+    private ImageView ivSearchButton;
+    private ImageView ivBackButton;
+
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.nav_discovery, container, false);
-        getJSONFacets();
+        initView();
         return view;
     }
 
-    private void initView(String data) {
-//        RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.discovery_recycler_card_view);
-        RecyclerView recyclerViewSmall = (RecyclerView) view.findViewById(R.id.discovery_recycler_card_view_small);
-        final StaggeredGridLayoutManager layoutManager = new StaggeredGridLayoutManager(3, StaggeredGridLayoutManager.VERTICAL);
-        recyclerViewSmall.setLayoutManager(layoutManager);
-//        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-//        recyclerViewSmall.setLayoutManager(new LinearLayoutManager(getContext()));
-//        recyclerViewSmall.setLayoutManager(new GridLayoutManager(getContext(), 3));
+    private void initView() {
+        fragmentManager = getFragmentManager();
+        fragmentManager.beginTransaction().add(R.id.nav_discovery_main, new FacetMainView(), "facet_view").commit();
 
-//        recyclerViewSmall.setLayoutManager(new StaggeredGridLayoutManager(getContext(),));
 
-//        List<Facet> facets = getFacets(data);
-        List<Facet> facetsSmall = new ArrayList<>();
-        for (int i = 0; i < 9; i++){
-            Facet facet = new Facet();
-            facet.setFacetName("hhh"+i);
-            facetsSmall.add(facet);
-        }
-//        FacetAdapter facetListAdapter = new FacetAdapter(getContext(), facets, 1);
-        FacetAdapter facetListAdapterSmall = new FacetAdapter(getContext(), facetsSmall, 3);
-//        recyclerView.setAdapter(facetListAdapter);
-        recyclerViewSmall.setAdapter(facetListAdapterSmall);
+        etSearchInput = (EditText) view.findViewById(R.id.search_input);
 
-    }
+        ivSearchButton = (ImageView) view.findViewById(R.id.search_icon);
+        ivBackButton = (ImageView) view.findViewById(R.id.back_icon);
 
-    public void getJSONFacets() {
-        BmobQuery query = new BmobQuery("facet");
-        query.findObjects(getContext(), new FindCallback() {
+        etSearchInput.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
-            public void onSuccess(JSONArray arg0) {
-                Message message = new Message();
-                Bundle bundle = new Bundle();
-                bundle.putString("msg", arg0.toString());
-                message.setData(bundle);
-                message.what = 1;
-                handler.sendMessage(message);
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (actionId == EditorInfo.IME_ACTION_SEND
+                        || (event != null && event.getKeyCode() == KeyEvent.KEYCODE_ENTER)) {
+                    submitText();
+                }
+                return false;
             }
+        });
 
-
+        ivSearchButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onFailure(int arg0, String arg1) {
-                showToast("查询失败:" + arg1);
+            public void onClick(View v) {
+                submitText();
+            }
+        });
+        ivBackButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                backToLast();
             }
         });
     }
 
-    private void showToast(String msg) {
-        Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
+    private void backToLast() {
+        Fragment fragment = fragmentManager.findFragmentByTag("facet_view");
+        if (fragment != null && fragmentManager.findFragmentByTag("facet_view").isVisible()) {
+            drawer = (DrawerLayout) getActivity().findViewById(R.id.drawer_layout);
+            drawer.closeDrawer(getActivity().findViewById(R.id.discovery_nav_view));
+        } else {
+            fragmentManager.beginTransaction().replace(R.id.nav_discovery_main, new FacetMainView(), "facet_view").commit();
+        }
     }
 
-    public List<Facet> getFacets(String data) {
-        JSONArray jsonArray = null;
-        JSONObject jsonObject = null;
-        try {
-            jsonArray = new JSONArray(data);
-
-        } catch (JSONException e) {
-            showToast(e.toString());
-            Log.i("Nav", e.toString()+"---------------------");
-        }
-
-        List<Facet> facets = new ArrayList<>();
-        for (int i = 0; i < 6; i++) {
-            try {
-                jsonObject = jsonArray.getJSONObject(i);
-                Facet facet = new Facet();
-                facet.setId(Integer.parseInt(jsonObject.get("id").toString()));
-                facet.setFacetName(jsonObject.get("facetName").toString());
-//                        facet.setBackgroundUrl(jsonObject.get("facetImage").toString());
-                facets.add(facet);
-            } catch (JSONException e) {
-                e.printStackTrace();
+    private void submitText() {
+        String inputText = etSearchInput.getText().toString();
+        if (inputText.equals("")){
+            Toast.makeText(getContext(), "请输入搜索内容", Toast.LENGTH_SHORT).show();
+        }else if (inputText.indexOf('.') == -1) {
+//            Toast.makeText(getContext(), "here you are", Toast.LENGTH_SHORT).show();
+            fragmentManager.beginTransaction().replace(R.id.nav_discovery_main, new RssSourceView(inputText, RssSourceView.SEARCH), "rss_source").commit();
+        } else {
+            if (!inputText.startsWith("http://")) {
+                inputText = "http://" + inputText;
             }
+            getFragmentManager().beginTransaction().replace(R.id.fragment_content,
+                    RSSListView.newInstance(inputText), "fragment_view").commit();
+            DrawerLayout drawer = (DrawerLayout) getActivity().findViewById(R.id.drawer_layout);
+            drawer.closeDrawer(getActivity().findViewById(R.id.discovery_nav_view));
         }
-
-        Log.i("NavDiscovery", facets.size() + ":::0");
-        return facets;
     }
+
 }

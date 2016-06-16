@@ -5,10 +5,16 @@
         tools:context=".MainActivity">
 
         <item
-            android:id="@+id/action_edit"
+            android:id="@+id/essay_save"
             android:title="rss_save"
             android:orderInCategory="80"
-            android:icon="@drawable/ic_menu_share"
+            android:icon="@drawable/ic_menu_star_border"
+            app:showAsAction="ifRoom" />
+        <item
+            android:id="@+id/essay_broser"
+            android:title="rss_save"
+            android:orderInCategory="80"
+            android:icon="@drawable/ic_menu_public"
             app:showAsAction="ifRoom" />
 
 </menu>

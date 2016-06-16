@@ -4,8 +4,14 @@ import cn.bmob.v3.BmobUser;
 
 /**
  * Created by Lancelot on 2016/5/4.
+ * 用户实体类
  */
 public class MeetUser extends BmobUser {
+
+    public MeetUser(){
+        this.setTableName("_User");
+    }
+
 
     //已包括
     // objectId,username,password,
@@ -17,7 +23,6 @@ public class MeetUser extends BmobUser {
     public String getGender() {
         return gender;
     }
-
     public void setGender(String gender) {
         this.gender = gender;
     }

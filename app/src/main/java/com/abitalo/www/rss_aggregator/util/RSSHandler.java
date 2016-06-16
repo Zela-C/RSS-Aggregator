@@ -1,7 +1,5 @@
 package com.abitalo.www.rss_aggregator.util;
 
-import android.util.Log;
-
 import com.abitalo.www.rss_aggregator.model.RSSFeed;
 import com.abitalo.www.rss_aggregator.model.RSSItem;
 
@@ -13,7 +11,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * Created by Zela on 2016/5/5.
  */
 
-public class RSSHandler extends DefaultHandler {
+public class  RSSHandler extends DefaultHandler {
     StringBuffer stringBuffer = null;
     RSSFeed rssFeed;
     RSSItem rssItem;

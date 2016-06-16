@@ -1,14 +1,19 @@
 package com.abitalo.www.rss_aggregator;
 
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.TextView;
 
 import java.text.DateFormat;
@@ -18,6 +23,7 @@ import java.util.HashMap;
 import java.util.Locale;
 
 public class WebActivity extends AppCompatActivity {
+    private boolean isStarred = false;
     private WebView webView = null;
     private Toolbar toolbar = null;
     private TextView title = null;
@@ -25,6 +31,7 @@ public class WebActivity extends AppCompatActivity {
     private TextView author = null;
     private Date pubDate= null;
     private Date currentDate = null;
+    private String url = null;
     private final DateFormat formatter = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.ENGLISH);
 
     @Override
@@ -49,6 +56,7 @@ public class WebActivity extends AppCompatActivity {
         Intent intent = getIntent();
         HashMap item = (HashMap) intent.getSerializableExtra("item");
 
+        url = item.get("url").toString();
         title.setText(item.get("title").toString());
         time.setText(item.get("date").toString());
 
@@ -79,8 +87,30 @@ public class WebActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem menuItem) {
-        if (menuItem.getItemId() == android.R.id.home) {
+        if (android.R.id.home == menuItem.getItemId()) {
             finish();
+        }
+        else if (R.id.essay_save == menuItem.getItemId()) {
+            if(isStarred) {
+                toolbar.getMenu().getItem(0).setIcon(R.drawable.ic_menu_star_border);
+                isStarred=false;
+            }
+            else{
+                toolbar.getMenu().getItem(0).setIcon(R.drawable.ic_menu_star);
+                isStarred=true;
+            }
+        }
+        else if(R.id.essay_broser == menuItem.getItemId()){
+            if(null !=url) {
+                Uri uri = Uri.parse(url);
+                Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                startActivity(intent);
+            }
+            else {
+                Snackbar.make(webView, "No Link For this essay.", Snackbar.LENGTH_SHORT)
+                        .setAction("Action", null).show();
+            }
+
         }
         return super.onOptionsItemSelected(menuItem);
     }

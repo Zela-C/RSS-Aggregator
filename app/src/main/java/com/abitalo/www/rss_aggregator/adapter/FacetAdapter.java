@@ -1,6 +1,8 @@
 package com.abitalo.www.rss_aggregator.adapter;
 
 import android.content.Context;
+import android.net.Uri;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
@@ -13,69 +15,79 @@ import android.widget.TextView;
 
 import com.abitalo.www.rss_aggregator.R;
 import com.abitalo.www.rss_aggregator.model.Facet;
+import com.abitalo.www.rss_aggregator.view.RssSourceView;
+import com.abitalo.www.rss_aggregator.view.SignInView;
+import com.facebook.drawee.backends.pipeline.Fresco;
+import com.facebook.drawee.view.SimpleDraweeView;
 
 import java.util.List;
 
 /**
  * Created by sangzhenya on 2016/5/10.
- * recycler适配器
+ * 源分类列表适配器
  */
-public class FacetAdapter extends RecyclerView.Adapter<FacetAdapter.ViewHolder> {
-    private Context context;
+public class FacetAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> implements View.OnClickListener {
     private List<Facet> facets;
-    private int line;
-    public FacetAdapter(Context context, List<Facet> facets,int line) {
-        this.context = context;
+
+    private static final int TYPE_LIST = 1;
+    private static final int TYPE_WATERFALL = 2;
+    private static final int TYPE_TITLE = 3;
+
+    private Fragment fragment;
+
+    public FacetAdapter(Context context, List<Facet> facets, Fragment fragment) {
         this.facets = facets;
-        this.line = line;
+        this.fragment = fragment;
     }
 
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = null;
-        if (viewType == 1){
-            view = LayoutInflater.from(parent.getContext()).inflate(R.layout.big_facet_card, parent, false);
-            StaggeredGridLayoutManager.LayoutParams layoutParams = (StaggeredGridLayoutManager.LayoutParams)view.getLayoutParams();
+    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        View view;
+        RecyclerView.ViewHolder viewHolder = null;
+        if (viewType == TYPE_LIST) {
+            view = LayoutInflater.from(parent.getContext()).inflate(R.layout.facet_card_big, parent, false);
+            StaggeredGridLayoutManager.LayoutParams layoutParams = (StaggeredGridLayoutManager.LayoutParams) view.getLayoutParams();
             layoutParams.setFullSpan(true);
             view.setLayoutParams(layoutParams);
-        }else if (viewType == 2){
-            view = LayoutInflater.from(parent.getContext()).inflate(R.layout.small_facet_card, parent, false);
-            StaggeredGridLayoutManager.LayoutParams layoutParams = (StaggeredGridLayoutManager.LayoutParams)view.getLayoutParams();
+            viewHolder = new ViewHolder(view);
+            view.setOnClickListener(this);
+        } else if (viewType == TYPE_WATERFALL) {
+            view = LayoutInflater.from(parent.getContext()).inflate(R.layout.facet_card_small, parent, false);
+            StaggeredGridLayoutManager.LayoutParams layoutParams = (StaggeredGridLayoutManager.LayoutParams) view.getLayoutParams();
             layoutParams.setFullSpan(false);
             view.setLayoutParams(layoutParams);
+            viewHolder = new ViewHolder(view);
+            view.setOnClickListener(this);
+        } else if (viewType == TYPE_TITLE) {
+            view = LayoutInflater.from(parent.getContext()).inflate(R.layout.facet_card_title, parent, false);
+            StaggeredGridLayoutManager.LayoutParams layoutParams = (StaggeredGridLayoutManager.LayoutParams) view.getLayoutParams();
+            layoutParams.setFullSpan(true);
+            view.setLayoutParams(layoutParams);
+            return new TextViewHolder(view);
         }
-
-
-  /*      final ViewHolder viewHolder = new ViewHolder(view);
-        view.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                int position = viewHolder.getPosition();
-                showResource(position);
-            }
-        });*/
-        return new ViewHolder(view);
-    }
-
-    private void showResource(int position) {
-        //// TODO:跳转到具体源的页面 2016/5/10
-        Log.i("Discovery",facets.get(position).getFacetName());
+        return viewHolder;
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
-        holder.tvFacetName.setText(facets.get(position).getFacetName());
-
-
-        //// TODO:需要添加图片的加载解析 2016/5/10
+    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+        if (holder instanceof ViewHolder) {
+            ((ViewHolder) holder).tvFacetName.setText(facets.get(position).getFacetName());
+            holder.itemView.setTag(facets.get(position).getId());
+            ((ViewHolder) holder).ivFacetImage.setImageURI(Uri.parse(facets.get(position).getBackgroundUrl()));
+        }
     }
+
+
+
 
     @Override
     public int getItemViewType(int position) {
-        if(position < 6){
-            return 1;
-        }else{
-            return 2;
+        if (position == 0) {
+            return TYPE_TITLE;
+        } else if (position > 0 && position <= 6) {
+            return TYPE_LIST;
+        } else {
+            return TYPE_WATERFALL;
         }
     }
 
@@ -84,17 +96,30 @@ public class FacetAdapter extends RecyclerView.Adapter<FacetAdapter.ViewHolder> 
         return facets.size();
     }
 
+    @Override
+    public void onClick(View v) {
+        showResource((Integer) v.getTag());
+    }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder{
+    private void showResource(int facetId) {
+        FragmentManager fragmentManager = fragment.getFragmentManager();
+        fragmentManager.beginTransaction().replace(R.id.nav_discovery_main, new RssSourceView(facetId, RssSourceView.FACET), "rss_source").commit();
+    }
+
+
+    public static class ViewHolder extends RecyclerView.ViewHolder {
         public TextView tvFacetName;
-        public ImageView ivFacetImage;
-
+        public SimpleDraweeView ivFacetImage;
         public ViewHolder(View itemView) {
             super(itemView);
-
             tvFacetName = (TextView) itemView.findViewById(R.id.big_facet_card_title);
-//            ivFacetImage = (ImageView) itemView.findViewById(R.id.big_facet_card_image);
+            ivFacetImage = (SimpleDraweeView) itemView.findViewById(R.id.big_facet_card_image);
+        }
+    }
 
+    public static class TextViewHolder extends RecyclerView.ViewHolder {
+        public TextViewHolder(View itemView) {
+            super(itemView);
         }
     }
 }

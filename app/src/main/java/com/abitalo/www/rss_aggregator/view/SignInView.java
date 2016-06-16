@@ -1,5 +1,7 @@
 package com.abitalo.www.rss_aggregator.view;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
@@ -7,6 +9,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -45,6 +48,11 @@ public class SignInView extends Fragment implements View.OnClickListener, IAccou
     }
 
     private void initView() {
+        try {
+            ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle("用户登录");
+        } catch (Exception exception) {
+            Log.e("RssListView", "Some thing wrong");
+        }
         etUserName = (EditText) view.findViewById(R.id.edit_user_name);
         etPassword = (EditText) view.findViewById(R.id.edit_user_password);
 
@@ -87,18 +95,16 @@ public class SignInView extends Fragment implements View.OnClickListener, IAccou
 
     }
 
-    private void showMenu() {//将来需要使用从云端获得的用户数据作为参数，然后使用adapter根据用户数据填充菜单。。
-        NavigationView navigationView = (NavigationView) getActivity().findViewById(R.id.nav_account);
-        navigationView.addView(new AccountNavigationView(getActivity()));
+    private void showMenu() {
         onDestroy();
-        drawer.openDrawer(getActivity().findViewById(R.id.nav_account));
-
         FragmentManager fragmentManager = getFragmentManager();
-        fragmentManager.beginTransaction().replace(R.id.fragment_content, new MainContentDemoView(), "Main content").commit();
+        fragmentManager.beginTransaction().replace(R.id.nav_account, new UserAccountView(), "user_account").commit();
+        Log.i("SignInView", "is here visited");
+        getFragmentManager().beginTransaction().replace(R.id.fragment_content,
+                RSSListView.newInstance("https://www.zhihu.com/rss"), "fragment_view").commit();
     }
 
     private void login() {
-        Log.i("SignInView", "Is here visited ?");
         presenter.login();
     }
 
@@ -113,6 +119,11 @@ public class SignInView extends Fragment implements View.OnClickListener, IAccou
     }
 
     @Override
+    public String getEmail() {
+        return null;
+    }
+
+    @Override
     public boolean onFailure(String msg) {
         Snackbar.make(view, msg, Snackbar.LENGTH_SHORT).show();
         return false;
@@ -122,6 +133,12 @@ public class SignInView extends Fragment implements View.OnClickListener, IAccou
     public boolean onSuccess() {
         showMenu();
         Snackbar.make(view, "Success!", Snackbar.LENGTH_SHORT).show();
+        SharedPreferences mySharedPreferences = getContext().getSharedPreferences("userAuthentication",
+                Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = mySharedPreferences.edit();
+        editor.putString("name", getUserName());
+        editor.apply();
+
         return false;
     }
 }
